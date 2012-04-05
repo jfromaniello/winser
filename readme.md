@@ -30,7 +30,7 @@ Then you can install your service as:
 
 When you install your node.js program as a windows service, your program is registered using nssm.exe (which is inside the module folder). Once you start the service nssm.exe is run and nssm.exe will execute "npm start" of your application.
 
-Remember that the default npm action is "node server.js".
+Remember that the default npm action for "start" is "node server.js".
 
 ## Credits
 
