@@ -32,6 +32,16 @@ When you install your node.js program as a windows service, your program is regi
 
 Remember that the default npm action is "node server.js".
 
+## Credits
+
+This project is heavily inspired in 
+
+ - [Node.js on windows](http://blog.tatham.oddie.com.au/2011/03/16/node-js-on-windows/)
+
+And it uses:
+
+ - [nssm](http://nssm.cc)
+
 ## License 
 
 (The MIT License)
