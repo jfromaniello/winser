@@ -7,6 +7,8 @@
 
     $ npm install winser
 
+Warning: you need node v0.6.11 or above and this package only will works on win32 platforms.
+
 ## Package.json
 
 Add these two scripts to your package.json:

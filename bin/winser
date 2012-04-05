@@ -51,7 +51,7 @@ sequence
     })
     .then(function(next, err, pkg, npmLocation){ 
         if(program.install){
-            exec("{binfolder}\\nssm.exe install {serviceName} {npmLocation} start {appFolder}".supplant({
+            exec("{binfolder}\\nssm.exe install {serviceName} \"{npmLocation}\" start \"{appFolder}\"".supplant({
                         binfolder: __dirname,
                         serviceName: pkg.name,
                         npmLocation: npmLocation,

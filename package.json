@@ -8,5 +8,7 @@
   },
   "scripts": {
     "start" : "node server123.js"
-  }
+  },
+  "bin": { "winser": "./bin/winser" },
+  "engines" : { "node" : ">=0.6.13" }
 }
