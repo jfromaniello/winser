@@ -32,6 +32,8 @@ When you install your node.js program as a windows service, your program is regi
 
 Remember that the default npm action for "start" is "node server.js".
 
+The name of the service will be the same from your package.json "name" setting.
+
 ## Credits
 
 This project is heavily inspired in 
