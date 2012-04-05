@@ -36,7 +36,7 @@ Remember that the default npm action for "start" is "node server.js".
 
 This project is heavily inspired in 
 
- - [Node.js on windows](http://blog.tatham.oddie.com.au/2011/03/16/node-js-on-windows/)
+ - [Node.js on windows by Tatham Oddie](http://blog.tatham.oddie.com.au/2011/03/16/node-js-on-windows/)
 
 And it uses:
 
