@@ -1,0 +1,12 @@
+{
+  "name": "winser",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+    "sequence" : "*",
+    "commander" : "*"
+  },
+  "scripts": {
+    "start" : "node server123.js"
+  }
+}
