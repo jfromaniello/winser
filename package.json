@@ -1,6 +1,18 @@
 {
   "name": "winser",
-  "version": "0.0.1",
+  "version": "0.0.3",
+  "description": "Run a node.js application as a window service using nssm.",
+  "keywords": ["windows", "services", "service", "daemon"],
+  "homepage": "https://github.com/jfromaniello/winser",
+  "author": { 
+              "name" : "Jose Fernando Romaniello", 
+              "email" : "jfromaniello@gmail.com", 
+              "url" : "http://joseoncode.com/"
+            },
+  "repository": {
+              "type" : "git", 
+              "url" : "git://github.com/jfromaniello/winser.git"
+            },
   "private": false,
   "dependencies": {
     "sequence" : "*",
