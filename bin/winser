@@ -16,7 +16,7 @@ String.prototype.supplant = function (o) {
 };
 
 program
-  .version('0.0.3')
+  .version('0.0.4')
   .option('-i, --install', 'install the node application as a windows service')
   .option('-r, --remove', 'remove the windows service for the node application')
   .parse(process.argv);
@@ -52,9 +52,10 @@ sequence
     })
     .then(function(next, err, pkg){
         exec("where npm", function(err, r){
-            next(err, pkg, r.trim().split("\r\n").filter(function(npm){
-                return npm.substring(-4) === ".cmd";
-            })[0]);
+            var npmPath = r.trim().split("\r\n").filter(function(npm){
+                return npm.substr(-4) === ".cmd";
+            })[0];
+            next(err, pkg, npmPath);
         });
     })
     .then(function(next, err, pkg, npmLocation){ 
