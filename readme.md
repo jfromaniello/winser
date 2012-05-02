@@ -1,7 +1,6 @@
-
 # WinSer
 
-  Run a node application as a window service using [nssm](http://nssm.cc).
+  Run node.js applications as windows services using [nssm](http://nssm.cc).
 
 ## Installation
 
