@@ -1,37 +1,58 @@
 #!/usr/bin/env node
 
 var fs = require("fs"),
-    exec = require('child_process').exec,
-    sequence = require('sequence')(), 
-    program = require('commander'),
-    os = require("os");
+    exec = require("child_process").exec,
+    sequence = require("sequence")(), 
+    program = require("commander"),
+    path = require("path");
 
 String.prototype.supplant = function (o) {
     return this.replace(/{([^{}]*)}/g,
         function (a, b) {
             var r = o[b];
-            return typeof r === 'string' || typeof r === 'number' ? r : a;
+            return typeof r === "string" || typeof r === "number" ? r : a;
         }
     );
 };
 
 program
-  .version('0.0.4')
-  .option('-i, --install', 'install the node application as a windows service')
-  .option('-r, --remove', 'remove the windows service for the node application')
+  .version("0.0.4")
+  .option("-i, --install", "install the node application as a windows service")
+  .option("-r, --remove", "remove the windows service for the node application")
+  .option("-s, --silent", "supress any information in the console")
+  .option("-p, --path [path]", "path to the node application you want to install as a service [current directory]", process.cwd())
   .parse(process.argv);
 
-if(!program.install && !program.remove){
+function log(message){
+    !program.silent && console.log(message);
+}
+
+
+if (!program.install && !program.remove){
     process.stdout.write(program.helpInformation());
-    process.exit(0);
+    process.exit();
     return;
 }
+
+if (process.platform !== "win32"){
+    log("Winser can only install services on windows.");
+    process.exit();
+    return;
+}
+
+if (!path.existsSync(path.join(program.path, "package.json"))){
+    log(program.path + " doesn't seems to be a node application path.\nIt doesn't contains a package.json file.");
+    process.exit();
+    return;
+}
+
+var appName = require(path.join(process.cwd(), "package.json")).name;
 
 sequence
     .then(function(next){
         exec("whoami /groups | findstr /b BUILTIN\\Administrators | findstr /c:\"Enabled group\"", function(err, r){
             if(r.length === 0){
-                console.error("You must run this tool as an administrator");
+                log("You must run this tool as an administrator");
                 process.exit();
             }else{
                 next();
@@ -39,49 +60,35 @@ sequence
         });
      })
     .then(function(next){
-        if(os.platform() !== "win32"){
-            console.error("This program only works on win32 platforms.");
-            process.exit();
-            return;
-        }
-        next();
-    })
-    .then(fs.readFile.bind(fs,'package.json'))
-    .then(function(next, err, buffer){
-        next(null, JSON.parse(buffer.toString()));
-    })
-    .then(function(next, err, pkg){
-        exec("where npm", function(err, r){
-            var npmPath = r.trim().split("\r\n").filter(function(npm){
-                return npm.substr(-4) === ".cmd";
-            })[0];
-            next(err, pkg, npmPath);
+        exec("where npm.cmd", function(err, r){
+            var npmPath = r.trim().split("\r\n")[0];
+            next(err, npmPath);
         });
     })
-    .then(function(next, err, pkg, npmLocation){ 
+    .then(function(next, err, npmLocation){ 
         if(program.install){
-            exec("{binfolder}\\nssm.exe install {serviceName} \"{npmLocation}\" start \"{appFolder}\"".supplant({
+            exec('{binfolder}\\nssm.exe install {serviceName} "{npmLocation}" start "{appFolder}"'.supplant({
                         binfolder: __dirname,
-                        serviceName: pkg.name,
+                        serviceName: appName,
                         npmLocation: npmLocation,
                         appFolder: fs.realpathSync(".")
                     }), function(err,stdout, stderr){
                 if(stderr){
-                    console.error(stderr);
+                    !program.silent && console.error(stderr);
                 }else{
-                    console.log("The program {serviceName} was installed as a service.".supplant({serviceName: pkg.name}));
+                    log("The program {serviceName} was installed as a service.".supplant({serviceName: appName}));
                 }
                 next();
             });
         }else if(program.remove){ 
             exec("{binfolder}\\nssm.exe remove {serviceName} confirm".supplant({
                 binfolder: __dirname,
-                serviceName: pkg.name
+                serviceName: appName
             }), function(err,stdout, stderr){
                 if(stderr){
-                    console.error(stderr);
+                    !program.silent && console.error(stderr);
                 }else{
-                    console.log("The service for {serviceName} was removed.".supplant({serviceName: pkg.name}));
+                    log("The service for {serviceName} was removed.".supplant({serviceName: appName}));
                 }
                 next(); 
             });
