@@ -6,16 +6,54 @@
 
     $ npm install winser
 
-Warning: you need node v0.6.11 or above and this package only will works on win32 platforms.
+## Command line arguments
+  
+    -h, --help          output usage information
+    -V, --version       output the version number
+    -i, --install       install the node application as a windows service
+    -r, --remove        remove the windows service for the node application
+    -x, --stop          stop the service before uninstalling
+    -s, --silent        supress any information in the console
+    -c, --confirmation  ask for confirmation before installing/uninstalling
+    -p, --path [path]   path to the node application you want to install as a service [current directory]
 
-## Package.json
+
+## Method 1: package.json
+
+I really like this method, in the package.json:
+
+```js
+  "scripts": {
+    "postinstall": "winser -i -s -c",
+    "preuninstall": "winser -r -x -s",
+  }
+```
+
+Then, in order to install a node application in lets say a server I will do this:
+
+```bash
+  npm install git://github.com/myprivate/repository/url.git
+```
+
+The arguments in the **postinstall** script means:
+-i: install
+-s: silent, don't display any information
+-c: ask for confirmation. This is very helpfull because during development you don't want to install/uninstall the package as a windows service but you will often run "npm install" in the folder, then you can cancel with an 'n'.
+
+The arguments in the **preuninstall** script means:
+-x: stop the service before uninstalling
+-r: remove the service
+-s: silent, don't display any information
+
+
+## Method 1: package.json
 
 Add these two scripts to your package.json:
 
 ```js
   "scripts": {
-    "install-windows-service": "node_modules\\.bin\\winser -i",
-    "uninstall-windows-service": "node_modules\\.bin\\winser -r"
+    "install-windows-service": "winser -i",
+    "uninstall-windows-service": "winser -r"
   }
 ```
 
