@@ -36,14 +36,16 @@ Then, in order to install a node application in lets say a server I will do this
 ```
 
 The arguments in the **postinstall** script means:
--i: install
--s: silent, don't display any information
--c: ask for confirmation. This is very helpfull because during development you don't want to install/uninstall the package as a windows service but you will often run "npm install" in the folder, then you can cancel with an 'n'.
+
+-  i install
+-  s silent, don't display any information
+-  c ask for confirmation. This is very helpfull because during development you don't want to install/uninstall the package as a windows service but you will often run "npm install" in the folder, then you can cancel with an 'n'.
 
 The arguments in the **preuninstall** script means:
--x: stop the service before uninstalling
--r: remove the service
--s: silent, don't display any information
+
+-  x stop the service before uninstalling
+-  r remove the service
+-  s silent, don't display any information
 
 
 ## Method 1: package.json
