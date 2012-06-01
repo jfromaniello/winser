@@ -19,9 +19,9 @@ program
   .version(require("../package.json").version)
   .option("-i, --install", "install the node application as a windows service")
   .option("-r, --remove",  "remove the windows service for the node application")
-  .option("-x, --stop",  "stop the service. Useful in conjuntion with -r")
+  .option("-x, --stop",  "stop the service before uninstalling")
   .option("-s, --silent",  "supress any information in the console")
-  .option("-c, --confirmation", "ask for confirmation before installing")
+  .option("-c, --confirmation", "ask for confirmation before installing/uninstalling")
   .option("-p, --path [path]", "path to the node application you want to install as a service [current directory]", process.cwd())
   .parse(process.argv);
 
@@ -77,7 +77,7 @@ sequence
         }
     })
     .then(function(next){
-        if(!program.stop){
+        if(!program.stop || program.install){
             next();
             return;
         }
