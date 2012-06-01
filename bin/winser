@@ -18,8 +18,9 @@ String.prototype.supplant = function (o) {
 program
   .version("0.0.4")
   .option("-i, --install", "install the node application as a windows service")
-  .option("-r, --remove", "remove the windows service for the node application")
-  .option("-s, --silent", "supress any information in the console")
+  .option("-r, --remove",  "remove the windows service for the node application")
+  .option("-s, --silent",  "supress any information in the console")
+  .option("-c, --confirmation", "ask for confirmation before installing")
   .option("-p, --path [path]", "path to the node application you want to install as a service [current directory]", process.cwd())
   .parse(process.argv);
 
@@ -64,6 +65,21 @@ sequence
             var npmPath = r.trim().split("\r\n")[0];
             next(err, npmPath);
         });
+    })
+    .then(function(next, err, npmLocation){
+        if (!program.confirmation) {
+            next(err, npmLocation);
+        }else{
+            var message = program.install ? "continue installing " + appName + " as a service? " :
+                                            "continue uninstalling the " + appName + " service? ";
+            program.confirm(message, function(ok){
+                if(ok){
+                    next(err, npmLocation);
+                }else{
+                    process.exit();
+                }
+            });
+        }
     })
     .then(function(next, err, npmLocation){ 
         if(program.install){
