@@ -18,7 +18,7 @@
     -p, --path [path]   path to the node application you want to install as a service [current directory]
 
 
-## Method 1: package.json
+## Method 1
 
 I really like this method, in the package.json:
 
@@ -48,7 +48,7 @@ The arguments in the **preuninstall** script means:
 -  s silent, don't display any information
 
 
-## Method 1: package.json
+## Method 2
 
 Add these two scripts to your package.json:
 
