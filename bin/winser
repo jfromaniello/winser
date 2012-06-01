@@ -16,7 +16,7 @@ String.prototype.supplant = function (o) {
 };
 
 program
-  .version("0.0.4")
+  .version(require("../package.json").version)
   .option("-i, --install", "install the node application as a windows service")
   .option("-r, --remove",  "remove the windows service for the node application")
   .option("-s, --silent",  "supress any information in the console")
