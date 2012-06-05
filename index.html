@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Winser by jfromaniello</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Winser</h1>
+        <h2>Run node.js applications as windows services using nssm.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/jfromaniello/winser/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/jfromaniello/winser/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/jfromaniello/winser" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <p>Run node.js applications as windows services using <a href="http://nssm.cc">nssm</a>.</p>
+
+<h2>Installation</h2>
+
+<pre><code>$ npm install winser
+</code></pre>
+
+<h2>Command line arguments</h2>
+
+<pre><code>-h, --help          output usage information
+-V, --version       output the version number
+-i, --install       install the node application as a windows service
+-r, --remove        remove the windows service for the node application
+-x, --stop          stop the service before uninstalling
+-s, --silent        supress any information in the console
+-c, --confirmation  ask for confirmation before installing/uninstalling
+-p, --path [path]   path to the node application you want to install as a service [current directory]
+</code></pre>
+
+<h2>Method 1</h2>
+
+<p>I really like this method, in the package.json:</p>
+
+<div class="highlight">
+<pre>  <span class="s2">"scripts"</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">"postinstall"</span><span class="o">:</span> <span class="s2">"winser -i -s -c"</span><span class="p">,</span>
+    <span class="s2">"preuninstall"</span><span class="o">:</span> <span class="s2">"winser -r -x -s"</span><span class="p">,</span>
+  <span class="p">}</span>
+</pre>
+</div>
+
+
+<p>Then, in order to install a node application in lets say a server I will do this:</p>
+
+<div class="highlight">
+<pre>  npm install git://github.com/myprivate/repository/url.git
+</pre>
+</div>
+
+
+<p>The arguments in the <strong>postinstall</strong> script means:</p>
+
+<ul>
+<li> i install</li>
+<li> s silent, don't display any information</li>
+<li> c ask for confirmation. This is very helpfull because during development you don't want to install/uninstall the package as a windows service but you will often run "npm install" in the folder, then you can cancel with an 'n'.</li>
+</ul><p>The arguments in the <strong>preuninstall</strong> script means:</p>
+
+<ul>
+<li> x stop the service before uninstalling</li>
+<li> r remove the service</li>
+<li> s silent, don't display any information</li>
+</ul><h2>Method 2</h2>
+
+<p>Add these two scripts to your package.json:</p>
+
+<div class="highlight">
+<pre>  <span class="s2">"scripts"</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">"install-windows-service"</span><span class="o">:</span> <span class="s2">"winser -i"</span><span class="p">,</span>
+    <span class="s2">"uninstall-windows-service"</span><span class="o">:</span> <span class="s2">"winser -r"</span>
+  <span class="p">}</span>
+</pre>
+</div>
+
+
+<p>Then you can install your service as:</p>
+
+<div class="highlight">
+<pre>  npm run-script install-windows-service
+</pre>
+</div>
+
+
+<h2>How it works</h2>
+
+<p>When you install your node.js program as a windows service, your program is registered using nssm.exe (which is inside the module folder). Once you start the service nssm.exe is run and nssm.exe will execute "npm start" of your application.</p>
+
+<p>Remember that the default npm action for "start" is "node server.js".</p>
+
+<p>The name of the service will be the same from your package.json "name" setting.</p>
+
+<h2>Credits</h2>
+
+<p>This project is heavily inspired in </p>
+
+<ul>
+<li><a href="http://blog.tatham.oddie.com.au/2011/03/16/node-js-on-windows/">Node.js on windows by Tatham Oddie</a></li>
+</ul><p>And it uses:</p>
+
+<ul>
+<li><a href="http://nssm.cc">nssm</a></li>
+</ul>
+      </section>
+    </div>
+
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-3648736-7");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
