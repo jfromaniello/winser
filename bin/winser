@@ -42,7 +42,7 @@ if (process.platform !== "win32"){
     return;
 }
 
-if (!path.existsSync(path.join(program.path, "package.json"))){
+if (!fs.existsSync(path.join(program.path, "package.json"))){
     log(program.path + " doesn't seems to be a node application path.\nIt doesn't contains a package.json file.");
     process.exit();
     return;
