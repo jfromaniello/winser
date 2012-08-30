@@ -42,7 +42,7 @@ if (process.platform !== "win32"){
     return;
 }
 
-if (!path.existsSync(path.join(program.path, "package.json"))){
+if (!(fs.existsSync||path.existsSync)(path.join(program.path, "package.json"))){
     log(program.path + " doesn't seems to be a node application path.\nIt doesn't contains a package.json file.");
     process.exit();
     return;
@@ -68,6 +68,7 @@ sequence
             var message = program.install ? "continue installing " + appName + " as a service? " :
                                             "continue uninstalling the " + appName + " service? ";
             program.confirm(message, function(ok){
+                process.stdin.pause(); //i think this program.confirm thing doesnt close the stdin properly
                 if(ok){
                     next();
                 }else{
@@ -91,7 +92,7 @@ sequence
     })
     .then(function(next, err, npmLocation){ 
         if(program.install){
-            exec('{binfolder}\\nssm.exe install {serviceName} "{npmLocation}" start "{appFolder}"'.supplant({
+            exec('\"{binfolder}\\nssm.exe\" install {serviceName} "{npmLocation}" start "\\"{appFolder}\\""'.supplant({
                         binfolder: __dirname,
                         serviceName: appName,
                         npmLocation: npmLocation,
@@ -105,7 +106,7 @@ sequence
                 next();
             });
         }else if(program.remove){ 
-            exec("{binfolder}\\nssm.exe remove {serviceName} confirm".supplant({
+            exec("\"{binfolder}\\nssm.exe\" remove {serviceName} confirm".supplant({
                 binfolder: __dirname,
                 serviceName: appName
             }), function(err,stdout, stderr){
