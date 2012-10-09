@@ -52,7 +52,7 @@ var appName = require(path.join(process.cwd(), "package.json")).name;
 
 sequence
     .then(function(next){
-        exec("whoami /groups | findstr /b BUILTIN\\Administrators | findstr /c:\"Enabled group\"", function(err, r){
+        exec("whoami /groups | findstr /c:\"S-1-5-32-544\" | findstr /c:\"Enabled group\"", function(err, r){
             if(r.length === 0){
                 log("You must run this tool as an administrator");
                 process.exit();
