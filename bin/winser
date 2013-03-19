@@ -50,6 +50,8 @@ if (!(fs.existsSync||path.existsSync)(path.join(program.path, "package.json"))){
 
 var appName = require(path.join(process.cwd(), "package.json")).name;
 
+
+
 sequence
     .then(function(next){
         if (!program.confirmation) {
