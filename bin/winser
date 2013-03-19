@@ -50,10 +50,13 @@ if (!(fs.existsSync||path.existsSync)(path.join(program.path, "package.json"))){
 
 var appName = require(path.join(process.cwd(), "package.json")).name;
 
+
+
 sequence
     .then(function(next){
-        exec("whoami /groups | findstr /c:\"S-1-5-32-544\" | findstr /c:\"Enabled group\"", function(err, r){
-            if(r.length === 0){
+        // Based on http://stackoverflow.com/questions/4051883/batch-script-how-to-check-for-admin-rights
+        exec("net session", function(err){
+            if(err && err.code !== 0){
                 log("You must run this tool as an administrator");
                 process.exit();
             }else{
@@ -90,11 +93,19 @@ sequence
             next(err, npmPath);
         });
     })
-    .then(function(next, err, npmLocation){ 
+    .then(function(next, err, npmLocation){
+        exec('wmic OS get OSArchitecture', function(err, stdout, stderr) {
+            var architecture = stdout.match(/([2346]{2})\-Bit/)[1];
+            next(err, npmLocation, architecture);
+        });
+    })
+    .then(function(next, err, npmLocation, architecture){ 
+        var nssmExe = architecture === '64' ? 'nssm64.exe' : 'nssm.exe';
         if(program.install){
-            exec('\"{binfolder}\\nssm.exe\" install {serviceName} "{npmLocation}" start "\\"{appFolder}\\""'.supplant({
+            exec('\"{binfolder}\\{nssmExe}\" install {serviceName} "{npmLocation}" start "\\"{appFolder}\\""'.supplant({
                         binfolder: __dirname,
                         serviceName: appName,
+                        nssmExe: nssmExe,
                         npmLocation: npmLocation,
                         appFolder: fs.realpathSync(".")
                     }), function(err,stdout, stderr){
@@ -106,9 +117,10 @@ sequence
                 next();
             });
         }else if(program.remove){ 
-            exec("\"{binfolder}\\nssm.exe\" remove {serviceName} confirm".supplant({
+            exec("\"{binfolder}\\{nssmExe}\" remove {serviceName} confirm".supplant({
                 binfolder: __dirname,
-                serviceName: appName
+                serviceName: appName,
+                nssmExe: nssmExe
             }), function(err,stdout, stderr){
                 if(stderr){
                     !program.silent && console.error(stderr);
