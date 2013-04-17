@@ -84,7 +84,7 @@ sequence
     })
     .then(function(next, err, npmLocation){
         exec('wmic OS get OSArchitecture', function(err, stdout, stderr) {
-            var architecture = stdout.match(/([2346]{2})\-Bit/)[1];
+            var architecture = stdout.match(/([2346]{2})\-[bB]it/)[1];
             next(err, npmLocation, architecture);
         });
     })
