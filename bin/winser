@@ -86,7 +86,7 @@ sequence
         exec('wmic OS get OSArchitecture', function(err, stdout, stderr) {
             if (err || !stdout) {
                 console.log('couldn\'t determine the OSArchitecture with "wmic OS get OSArchitecture". Using 32 bit version.');
-                next(err, npmLocation, '32');
+                return next(err, npmLocation, '32');
             }
             var architecture = stdout.match(/(32|64)/)[1];
             next(err, npmLocation, architecture);
