@@ -108,7 +108,7 @@ sequence
                 }else{
                     log("The program {serviceName} was installed as a service.".supplant({serviceName: appName}));
                 }
-                next(nssmExe);
+                next(err || stderr, nssmExe);
             });
         }else if(program.remove){ 
             exec("\"{binfolder}\\{nssmExe}\" remove {serviceName} confirm".supplant({
