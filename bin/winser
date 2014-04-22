@@ -17,6 +17,7 @@ String.prototype.supplant = function (o) {
 
 program
   .version(require("../package.json").version)
+  .option("-a, --autostart", "start the application immediately after installation")
   .option("-i, --install", "install the node application as a windows service")
   .option("-r, --remove",  "remove the windows service for the node application")
   .option("-x, --stop",  "stop the service before uninstalling")
@@ -107,7 +108,7 @@ sequence
                 }else{
                     log("The program {serviceName} was installed as a service.".supplant({serviceName: appName}));
                 }
-                next();
+                next(err || stderr, nssmExe);
             });
         }else if(program.remove){ 
             exec("\"{binfolder}\\{nssmExe}\" remove {serviceName} confirm".supplant({
@@ -121,6 +122,22 @@ sequence
                     log("The service for {serviceName} was removed.".supplant({serviceName: appName}));
                 }
                 next(); 
+            });
+        }
+    })
+    .then(function(next, err, nssmExe){
+        if(program.autostart){
+            exec('\"{binfolder}\\{nssmExe}\" start {serviceName}'.supplant({
+                        binfolder: __dirname,
+                        serviceName: appName,
+                        nssmExe: nssmExe,
+                    }), function(err,stdout, stderr){
+                if(stderr){
+                    !program.silent && console.error(stderr);
+                }else{
+                    log("The program {serviceName} was started successfully.".supplant({serviceName: appName}));
+                }
+                next(nssmExe);
             });
         }
     });
