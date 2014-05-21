@@ -84,7 +84,7 @@ sequence
         });
     })
     .then(function(next, err, npmLocation){
-        exec('wmic OS get OSArchitecture', function(err, stdout, stderr) {
+        exec('wmic OS get OSArchitecture < nul', function(err, stdout, stderr) {
             if (err || !stdout) {
                 console.log('couldn\'t determine the OSArchitecture with "wmic OS get OSArchitecture". Using 32 bit version.');
                 return next(err, npmLocation, '32');
