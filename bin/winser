@@ -15,6 +15,9 @@ String.prototype.supplant = function (o) {
     );
 };
 
+
+var appPackage = require(path.join(process.cwd(), "package.json"));
+
 program
   .version(require("../package.json").version)
   .option("-a, --autostart", "start the application immediately after installation")
@@ -24,6 +27,9 @@ program
   .option("-s, --silent",  "supress any information in the console")
   .option("-c, --confirmation", "ask for confirmation before installing/uninstalling")
   .option("-p, --path [path]", "path to the node application you want to install as a service [current directory]", process.cwd())
+  .option("-n, --name [name]", "name for service [name from package.json] ", appPackage.name)
+  .option("-d, --description [description]", "service description [description from package.json] ", appPackage.description)
+  .option("--display-name [name]", "display name for service")
   .parse(process.argv);
 
 function log(message){
@@ -49,17 +55,13 @@ if (!(fs.existsSync||path.existsSync)(path.join(program.path, "package.json"))){
     return;
 }
 
-var appName = require(path.join(process.cwd(), "package.json")).name;
-
-
-
 sequence
     .then(function(next){
         if (!program.confirmation) {
             next();
         }else{
-            var message = program.install ? "continue installing " + appName + " as a service? " :
-                                            "continue uninstalling the " + appName + " service? ";
+            var message = program.install ? "continue installing \"" + program.name + "\" as a service? " :
+                                            "continue uninstalling the " + program.name + " service? ";
             program.confirm(message, function(ok){
                 process.stdin.pause(); //i think this program.confirm thing doesnt close the stdin properly
                 if(ok){
@@ -75,7 +77,7 @@ sequence
             next();
             return;
         }
-        exec("net stop " + appName, next);
+        exec("net stop \"" + program.name + "\"", next);
     })
     .then(function(next){
         exec("where npm.cmd", function(err, r){
@@ -98,7 +100,7 @@ sequence
         if(program.install){
             exec('\"{binfolder}\\{nssmExe}\" install {serviceName} "{npmLocation}" start "\\"{appFolder}\\""'.supplant({
                         binfolder: __dirname,
-                        serviceName: appName,
+                        serviceName: program.name,
                         nssmExe: nssmExe,
                         npmLocation: npmLocation,
                         appFolder: fs.realpathSync(".")
@@ -106,20 +108,20 @@ sequence
                 if(stderr){
                     !program.silent && console.error(stderr);
                 }else{
-                    log("The program {serviceName} was installed as a service.".supplant({serviceName: appName}));
+                    log("The program {serviceName} was installed as a service.".supplant({serviceName: program.name}));
                 }
                 next(err || stderr, nssmExe);
             });
         }else if(program.remove){ 
             exec("\"{binfolder}\\{nssmExe}\" remove {serviceName} confirm".supplant({
                 binfolder: __dirname,
-                serviceName: appName,
+                serviceName: program.name,
                 nssmExe: nssmExe
             }), function(err,stdout, stderr){
                 if(stderr){
                     !program.silent && console.error(stderr);
                 }else{
-                    log("The service for {serviceName} was removed.".supplant({serviceName: appName}));
+                    log("The service for {serviceName} was removed.".supplant({serviceName: program.name}));
                 }
                 next(); 
             });
@@ -129,7 +131,7 @@ sequence
         if(program.autostart){
             exec('\"{binfolder}\\{nssmExe}\" start {serviceName}'.supplant({
                         binfolder: __dirname,
-                        serviceName: appName,
+                        serviceName: program.name,
                         nssmExe: nssmExe,
                     }), function(err,stdout, stderr){
                 if(stderr){
