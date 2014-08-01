@@ -31,11 +31,12 @@ program
   .option("-c, --confirmation", "ask for confirmation before installing/uninstalling")
   .option("-p, --path [path]", "path to the node application you want to install as a service [current directory]", process.cwd())
   .option("-n, --name [name]", "name for service [name from package.json] ")
-  .option("--description [description]", "service description [description from package.json] ")
+  .option("--desc [description]", "service description [description from package.json] ")
   .option("--displayname [name]", "display name for service")
   .option("--startuptype [type]", "set service startup type on boot (auto|manual|delayed|disabled) [auto]", "auto")
   .option("--env [envvar]", "propogate environment variable", collect, [])
   .parse(process.argv);
+
 
 
 function log(message){
@@ -58,15 +59,14 @@ function getStartupType(){
 }
 
 var quitState = "quit";
-var appPackage = null;
 var npmLocation = null;
 var nssmLocation = null;
 
 function nssmExec(command, arguments, callback){
     if (arguments === null)
         arguments = '';
-    exec(nssmLocation + ' '+ command +' "'+ program.name '" ' + arguments,
-        function(){
+    exec(nssmLocation + ' '+ command +' "'+ program.name + '" ' + arguments,
+        function(err, stdout, stderr){
             if (stderr){
                 !program.silent && console.error(stderr);
             }
@@ -91,13 +91,24 @@ async.series([
         next(error);
     },
     function(next){
+        exec('NET SESSION', function(err, stdout, stderr){
+            if(err || stderr.length !== 0){
+                next("No rights to manage services.");
+            }else{
+                next();
+            }
+        });
+    }, 
+    function(next){
         var error = null;
         if (!(fs.existsSync||path.existsSync)(path.join(program.path, "package.json"))){
-            error = '"' program.path '" doesn\'t seems to be a node application path.\nIt doesn\'t contains a package.json file.');
+            error = '"' + program.path + '" doesn\'t seems to be a node application path.\nIt doesn\'t contains a package.json file.';
         }else{
-            appPackage = require(path.join(program.path, "package.json"));
-            program.name = program.name | appPackage.name;
-            program.description = program.description | appPackage.description;
+            var appPackage = require(path.join(program.path, "package.json"));
+            if (!program.name)
+                program.name = appPackage.name;
+            if (!program.desc)
+                program.desc = appPackage.description;
         }
         next(error);
     },
@@ -139,7 +150,20 @@ async.series([
     },
     function(next){
         if (program.stop && program.remove){
-            nssmExec('stop', null, next);
+            exec(nssmLocation + ' status "'+ program.name + '"',
+                function(err, stdout, stderr){
+                    if (!err && !stderr){
+                        var result = stdout.replace(/\0/gi, "").split("\r\n")[0];
+                        if (result === "SERVICE_STOPPED"){
+                            next();
+                        }
+                        nssmExec('stop', null, function(){
+                            next();
+                        });
+                        return;
+                    }
+                    next(err || stderr);
+                });
         }else{
             next();
         }
@@ -149,15 +173,15 @@ async.series([
             nssmExec('install', npmLocation + ' start',
                 function(error){
                     if(!error){
-                        log('The program "' +program.name '" was installed as a service.');
+                        log('The program "' + program.name + '" was installed as a service.');
                     }
                     next(error);
                 });
         }else if(program.remove){ 
-            nssmExec('remove', null,
+            nssmExec('remove', ' confirm', 
                 function(error){
                     if(!error){
-                        log('The service for "' +program.name '" was removed.');
+                        log('The service for "' + program.name + '" was removed.');
                         error = quitState;
                     }
                     next(error);
@@ -168,14 +192,14 @@ async.series([
         nssmExec('set', 'AppDirectory "' + program.path + '"', 
             function(error){
                 if (error)
-                    next('Can\'t set startup folder for service');
+                    next('Can\'t set startup folder (' + program.path + ') for service');
                 else
                     next();
             });
     },
     function(next){
-        if (program.description){
-            nssmExec('set', 'Description "' + program.description + '"', 
+        if (program.desc){
+            nssmExec('set', 'Description "' + program.desc + '"', 
                 function(error){
                     if (error)
                         next('Can\'t set description for service');
@@ -226,7 +250,7 @@ async.series([
             nssmExec('start', null,
                 function(error){
                     if(!error){
-                        log('The service for "' +program.name '" was removed.');
+                        log('The service for "' + program.name + '" was removed.');
                         next(quitState);
                     }else{
                         next(error);
