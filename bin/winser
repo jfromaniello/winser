@@ -250,7 +250,7 @@ async.series([
             nssmExec('start', null,
                 function(error){
                     if(!error){
-                        log('The service for "' + program.name + '" was removed.');
+                        log('The service for "' + program.name + '" was started.');
                         next(quitState);
                     }else{
                         next(error);
