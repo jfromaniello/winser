@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-var fs = require("fs"),
-    exec = require("child_process").exec,
-    sequence = require("sequence")(), 
-    program = require("commander"),
-    path = require("path");
+var fs = require("fs");
+var exec = require("child_process").exec;
+var async = require("async");
+var program = require("commander");
+var path = require("path");
 
 String.prototype.supplant = function (o) {
     return this.replace(/{([^{}]*)}/g,
@@ -15,6 +15,12 @@ String.prototype.supplant = function (o) {
     );
 };
 
+
+function collect(val, memo) {
+  memo.push(val);
+  return memo;
+}
+
 program
   .version(require("../package.json").version)
   .option("-a, --autostart", "start the application immediately after installation")
@@ -24,120 +30,241 @@ program
   .option("-s, --silent",  "supress any information in the console")
   .option("-c, --confirmation", "ask for confirmation before installing/uninstalling")
   .option("-p, --path [path]", "path to the node application you want to install as a service [current directory]", process.cwd())
+  .option("-n, --name [name]", "name for service [name from package.json] ")
+  .option("--desc [description]", "service description [description from package.json] ")
+  .option("--displayname [name]", "display name for service")
+  .option("--startuptype [type]", "set service startup type on boot (auto|manual|delayed|disabled) [auto]", "auto")
+  .option("--env [envvar]", "propogate environment variable", collect, [])
   .parse(process.argv);
+
+
 
 function log(message){
     !program.silent && console.log(message);
 }
 
-
-if (!program.install && !program.remove){
-    process.stdout.write(program.helpInformation());
-    process.exit();
-    return;
+function getStartupType(){
+    switch (program.startuptype){
+        case "auto":
+            return "SERVICE_AUTO_START";
+        case "manual":
+            return "SERVICE_DELAYED_START";
+        case "delayed":
+            return "SERVICE_DEMAND_START";
+        case "disabled":
+            return "SERVICE_DISABLED";
+        default:
+            return "SERVICE_AUTO_START";
+    }
 }
 
-if (process.platform !== "win32"){
-    log("Winser can only install services on windows.");
-    process.exit();
-    return;
+var quitState = "quit";
+var npmLocation = null;
+var nssmLocation = null;
+
+function nssmExec(command, arguments, callback){
+    if (arguments === null)
+        arguments = '';
+    exec(nssmLocation + ' '+ command +' "'+ program.name + '" ' + arguments,
+        function(err, stdout, stderr){
+            if (stderr){
+                !program.silent && console.error(stderr);
+            }
+            callback(err || stderr);
+        });
 }
 
-if (!(fs.existsSync||path.existsSync)(path.join(program.path, "package.json"))){
-    log(program.path + " doesn't seems to be a node application path.\nIt doesn't contains a package.json file.");
-    process.exit();
-    return;
-}
-
-var appName = require(path.join(process.cwd(), "package.json")).name;
-
-
-
-sequence
-    .then(function(next){
+async.series([
+    function(next){
+        var error = null;
+        if (!program.install && !program.remove){
+            process.stdout.write(program.helpInformation());
+            error = quitState;
+        }
+        next(error);
+    },
+    function(next){
+        var error = null;
+        if (process.platform !== "win32"){
+            error = 'Winser can only install services on windows.';
+        }
+        next(error);
+    },
+    function(next){
+        exec('NET SESSION', function(err, stdout, stderr){
+            if(err || stderr.length !== 0){
+                next("No rights to manage services.");
+            }else{
+                next();
+            }
+        });
+    }, 
+    function(next){
+        var error = null;
+        if (!(fs.existsSync||path.existsSync)(path.join(program.path, "package.json"))){
+            error = '"' + program.path + '" doesn\'t seems to be a node application path.\nIt doesn\'t contains a package.json file.';
+        }else{
+            var appPackage = require(path.join(program.path, "package.json"));
+            if (!program.name)
+                program.name = appPackage.name;
+            if (!program.desc)
+                program.desc = appPackage.description;
+        }
+        next(error);
+    },
+    function(next){
+        exec('where npm.cmd', function(error, stdout) {
+            if (error !== null) {
+                next('Can\'t find npm...');
+                return;
+            }
+            npmLocation = '"' + stdout.trim().split("\r\n")[0] + '"';
+            next();
+        });
+    },
+    function(next){
+        exec('wmic CPU get AddressWidth < nul', function(err, stdout) {
+            var arch = '32';
+            if (!err && stdout) {
+                arch = stdout.match(/(32|64)/)[1];
+            }
+            nssmLocation = '"' + path.join(__dirname, (arch === '64') ? 'nssm64.exe' : 'nssm.exe') + '"';
+            next();
+        });
+    },
+    function(next){
         if (!program.confirmation) {
             next();
         }else{
-            var message = program.install ? "continue installing " + appName + " as a service? " :
-                                            "continue uninstalling the " + appName + " service? ";
+            var message = program.install ? 'continue installing "' + program.name + '" as a service? ' :
+                                            'continue uninstalling the "' + program.name + '" service? ';
             program.confirm(message, function(ok){
                 process.stdin.pause(); //i think this program.confirm thing doesnt close the stdin properly
                 if(ok){
                     next();
                 }else{
-                    process.exit();
+                    next(quitState);
                 }
             });
         }
-    })
-    .then(function(next){
-        if(!program.stop || program.install){
+    },
+    function(next){
+        if (program.stop && program.remove){
+            exec(nssmLocation + ' status "'+ program.name + '"',
+                function(err, stdout, stderr){
+                    if (!err && !stderr){
+                        var result = stdout.replace(/\0/gi, "").split("\r\n")[0];
+                        if (result === "SERVICE_STOPPED"){
+                            next();
+                        }
+                        nssmExec('stop', null, function(){
+                            next();
+                        });
+                        return;
+                    }
+                    next(err || stderr);
+                });
+        }else{
             next();
-            return;
         }
-        exec("net stop " + appName, next);
-    })
-    .then(function(next){
-        exec("where npm.cmd", function(err, r){
-            var npmPath = r.trim().split("\r\n")[0];
-            next(err, npmPath);
-        });
-    })
-    .then(function(next, err, npmLocation){
-        exec('wmic OS get OSArchitecture', function(err, stdout, stderr) {
-            if (err || !stdout) {
-                console.log('couldn\'t determine the OSArchitecture with "wmic OS get OSArchitecture". Using 32 bit version.');
-                return next(err, npmLocation, '32');
-            }
-            var architecture = stdout.match(/(32|64)/)[1];
-            next(err, npmLocation, architecture);
-        });
-    })
-    .then(function(next, err, npmLocation, architecture){ 
-        var nssmExe = architecture === '64' ? 'nssm64.exe' : 'nssm.exe';
+    },
+    function(next){
         if(program.install){
-            exec('\"{binfolder}\\{nssmExe}\" install {serviceName} "{npmLocation}" start "\\"{appFolder}\\""'.supplant({
-                        binfolder: __dirname,
-                        serviceName: appName,
-                        nssmExe: nssmExe,
-                        npmLocation: npmLocation,
-                        appFolder: fs.realpathSync(".")
-                    }), function(err,stdout, stderr){
-                if(stderr){
-                    !program.silent && console.error(stderr);
-                }else{
-                    log("The program {serviceName} was installed as a service.".supplant({serviceName: appName}));
-                }
-                next(err || stderr, nssmExe);
-            });
+            nssmExec('install', npmLocation + ' start',
+                function(error){
+                    if(!error){
+                        log('The program "' + program.name + '" was installed as a service.');
+                    }
+                    next(error);
+                });
         }else if(program.remove){ 
-            exec("\"{binfolder}\\{nssmExe}\" remove {serviceName} confirm".supplant({
-                binfolder: __dirname,
-                serviceName: appName,
-                nssmExe: nssmExe
-            }), function(err,stdout, stderr){
-                if(stderr){
-                    !program.silent && console.error(stderr);
-                }else{
-                    log("The service for {serviceName} was removed.".supplant({serviceName: appName}));
-                }
-                next(); 
-            });
+            nssmExec('remove', ' confirm', 
+                function(error){
+                    if(!error){
+                        log('The service for "' + program.name + '" was removed.');
+                        error = quitState;
+                    }
+                    next(error);
+                });
         }
-    })
-    .then(function(next, err, nssmExe){
+    },
+    function(next){
+        nssmExec('set', 'AppDirectory "' + program.path + '"', 
+            function(error){
+                if (error)
+                    next('Can\'t set startup folder (' + program.path + ') for service');
+                else
+                    next();
+            });
+    },
+    function(next){
+        if (program.desc){
+            nssmExec('set', 'Description "' + program.desc + '"', 
+                function(error){
+                    if (error)
+                        next('Can\'t set description for service');
+                    else
+                        next();
+                });
+        }else{
+            next();
+        }
+    },
+    function(next){
+        if (program.displayname){
+            nssmExec('set', 'DisplayName "' + program.displayname + '"', 
+                function(error){
+                    if (error)
+                        next('Can\'t set display name for service');
+                    else
+                        next();
+                });
+        }else{
+            next();
+        }
+    },
+    function(next){
+        nssmExec('set', 'Start ' + getStartupType(),
+            function(error){
+                if (error)
+                    next('Can\'t set startup type for service');
+                else
+                    next();
+            });
+    },
+    function(next){
+        if (program.env.lenght > 0){
+            nssmExec('set', 'AppEnvironmentExtra "' + program.env.join(' ') + '"',
+                function(error){
+                    if (error)
+                        next('Can\'t set environment for service');
+                    else
+                        next();
+                });
+        }else{
+            next();
+        }
+    },
+    function(next){
         if(program.autostart){
-            exec('\"{binfolder}\\{nssmExe}\" start {serviceName}'.supplant({
-                        binfolder: __dirname,
-                        serviceName: appName,
-                        nssmExe: nssmExe,
-                    }), function(err,stdout, stderr){
-                if(stderr){
-                    !program.silent && console.error(stderr);
-                }else{
-                    log("The program {serviceName} was started successfully.".supplant({serviceName: appName}));
-                }
-                next(nssmExe);
-            });
+            nssmExec('start', null,
+                function(error){
+                    if(!error){
+                        log('The service for "' + program.name + '" was started.');
+                        next(quitState);
+                    }else{
+                        next(error);
+                    }
+                });
         }
-    });
+    }
+],
+function(error){
+    if(error === quitState)
+        return;
+    if(error){
+        console.error(error);
+        process.exit(1);
+    }
+});
+
