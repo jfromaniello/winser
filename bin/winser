@@ -115,16 +115,6 @@ async.series([
         next(error);
     },
     function(next){
-        exec('where node.exe', function(error, stdout) {
-            if (error !== null) {
-                next('Can\'t find node...');
-                return;
-            }
-            nodeLocation = '"' + stdout.trim().split("\r\n")[0] + '"';
-            next();
-        });
-    },
-    function(next){
         exec('where npm.cmd', function(error, stdout) {
             if (error !== null) {
                 next('Can\'t find npm...');
