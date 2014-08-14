@@ -31,10 +31,12 @@ program
   .option("-c, --confirmation", "ask for confirmation before installing/uninstalling")
   .option("-p, --path [path]", "path to the node application you want to install as a service [current directory]", process.cwd())
   .option("-n, --name [name]", "name for service [name from package.json] ")
+  .option("--startcmd [command]", "use this command for start service [npm start]")
   .option("--desc [description]", "service description [description from package.json] ")
   .option("--displayname [name]", "display name for service")
   .option("--startuptype [type]", "set service startup type on boot (auto|manual|delayed|disabled) [auto]", "auto")
   .option("--env [envvar]", "propogate environment variable", collect, [])
+  .option("--nonpm", "avoid search for npm. May be usefull with non standart configurations with custom startup command")
   .parse(process.argv);
 
 
@@ -109,10 +111,15 @@ async.series([
                 program.name = appPackage.name;
             if (!program.desc)
                 program.desc = appPackage.description;
+            program.main = appPackage.main;
         }
         next(error);
     },
     function(next){
+        if (program.nonpm && program.startcmd) {
+            next();
+            return;
+        }
         exec('where npm.cmd', function(error, stdout) {
             if (error !== null) {
                 next('Can\'t find npm...');
@@ -170,7 +177,11 @@ async.series([
     },
     function(next){
         if(program.install){
-            nssmExec('install', npmLocation + ' start',
+            var startupArg = npmLocation + ' start';
+            if (program.startcmd){
+                startupArg = program.startcmd;
+            }
+            nssmExec('install', startupArg,
                 function(error){
                     if(!error){
                         log('The program "' + program.name + '" was installed as a service.');
