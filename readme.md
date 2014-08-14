@@ -11,13 +11,15 @@
     -h, --help                   output usage information
     -V, --version                output the version number
     -i, --install                install the node application as a windows service
+    -a, --autostart              start the application immediately after installation
     -r, --remove                 remove the windows service for the node application
     -x, --stop                   stop the service before uninstalling
     -s, --silent                 supress any information in the console
     -c, --confirmation           ask for confirmation before installing/uninstalling
     -p, --path [path]            path to the node application you want to install as a service [default: current directory]
     -n, --name [name]            name for service [default: name from package.json]
-    --description [description]  service description [default: description from package.json]
+    --desc [description]         service description [default: description from package.json]
+    --startcmd [command]         use this command for start service [default: npm start]
     --displayname [name]         display name for service
     --startuptype [type]         set service startup type on boot (auto|manual|delayed|disabled) [default: auto]
     --env [envvar]               propogate environment variable
