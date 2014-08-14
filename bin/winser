@@ -36,6 +36,7 @@ program
   .option("--displayname [name]", "display name for service")
   .option("--startuptype [type]", "set service startup type on boot (auto|manual|delayed|disabled) [auto]", "auto")
   .option("--env [envvar]", "propogate environment variable", collect, [])
+  .option("--nonpm", "avoid search for npm. May be usefull with non standart configurations with custom startup command")
   .parse(process.argv);
 
 
@@ -115,6 +116,10 @@ async.series([
         next(error);
     },
     function(next){
+        if (program.nonpm && program.startcmd) {
+            next();
+            return;
+        }
         exec('where npm.cmd', function(error, stdout) {
             if (error !== null) {
                 next('Can\'t find npm...');

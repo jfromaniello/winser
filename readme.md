@@ -23,6 +23,7 @@
     --displayname [name]         display name for service
     --startuptype [type]         set service startup type on boot (auto|manual|delayed|disabled) [default: auto]
     --env [envvar]               propogate environment variable
+    --nonpm                      avoid search for npm. (May be usefull with non standart configurations with custom startup command)
 
 ## Method 1
 
