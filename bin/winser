@@ -116,7 +116,7 @@ async.series([
         next(error);
     },
     function(next){
-        if (program.nonpm && program.startcmd) {
+        if ((program.nonpm && program.startcmd) || !program.install) {
             next();
             return;
         }
