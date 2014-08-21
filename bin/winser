@@ -111,10 +111,16 @@ async.series([
                 program.name = appPackage.name;
             if (!program.desc)
                 program.desc = appPackage.description;
-            program.main = appPackage.main;
             if (program.install) {
-                if (!program.startcmd && !program.startwithnpm)
-                    program.startcmd = appPackage.scripts.start;
+                if (!program.startcmd && !program.startwithnpm){
+                    try {
+                        program.startcmd = appPackage.scripts.start;
+                    }catch(e){
+                    }
+                    if (!program.startcmd && appPackage.main){
+                        program.startcmd = "node " + appPackage.main
+                    }
+                }
             }
         }
         next(error);
