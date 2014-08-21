@@ -23,7 +23,8 @@
     --displayname [name]         display name for service
     --startuptype [type]         set service startup type on boot (auto|manual|delayed|disabled) [default: auto]
     --env [envvar]               propogate environment variable
-    --nonpm                      avoid search for npm. (May be usefull with non standart configurations with custom startup command)
+    --startwithnpm               use "npm start" as a startcmd
+    --noreatart                  disable service restarting on error
 
 ## Method 1
 
@@ -74,7 +75,7 @@ Then you can install your service as:
 
 ## How it works
 
-When you install your node.js program as a windows service, your program is registered using nssm.exe (which is inside the module folder). Once you start the service nssm.exe is run and nssm.exe will execute "npm start" of your application.
+When you install your node.js program as a windows service, your program is registered using nssm.exe (which is inside the module folder). Once you start the service nssm.exe is run and nssm.exe will execute command from "start" npm action of your application.
 
 Remember that the default npm action for "start" is "node server.js".
 
