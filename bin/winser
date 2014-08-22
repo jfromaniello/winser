@@ -148,8 +148,8 @@ async.series([
             var appPackage = require(path.join(options.path, "package.json"));
             if (!options.name)
                 options.name = appPackage.name;
-            if (!options.desc)
-                options.desc = appPackage.description;
+            if (!options.description)
+                options.description = appPackage.description;
             if (options.install) {
                 if (!options.startcmd && !options.startwithnpm){
                     try {
@@ -257,8 +257,8 @@ async.series([
             });
     },
     function(next){
-        if (options.desc){
-            nssmExec('set', 'Description "' + options.desc + '"', 
+        if (options.description){
+            nssmExec('set', 'Description "' + options.description + '"', 
                 function(error){
                     if (error)
                         next('Can\'t set description for service');
