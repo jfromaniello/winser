@@ -314,7 +314,7 @@ async.series([
         next();
     },
     function(next){
-        if (options.set.length === 0){
+        if (!options.set || options.set.length === 0){
             next();
         }else{
             async.each(options.set,
