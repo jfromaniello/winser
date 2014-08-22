@@ -7,24 +7,23 @@
     $ npm install winser
 
 ## Command line arguments
-  
-    -h, --help                   output usage information
-    -V, --version                output the version number
-    -i, --install                install the node application as a windows service
-    -a, --autostart              start the application immediately after installation
-    -r, --remove                 remove the windows service for the node application
-    -x, --stop                   stop the service before uninstalling
-    -s, --silent                 supress any information in the console
-    -c, --confirmation           ask for confirmation before installing/uninstalling
-    -p, --path [path]            path to the node application you want to install as a service [default: current directory]
-    -n, --name [name]            name for service [default: name from package.json]
-    --desc [description]         service description [default: description from package.json]
-    --startcmd [command]         use this command for start service
-    --displayname [name]         display name for service
-    --startuptype [type]         set service startup type on boot (auto|manual|delayed|disabled) [default: auto]
-    --env [envvar]               propogate environment variable
-    --startwithnpm               use "npm start" as a startcmd
-    --noreatart                  disable service restarting on error
+
+    -v, --version                 show vinser version and exit
+    -a, --autostart               start the application immediately after installation
+    -i, --install                 install the node application as a windows service
+    -r, --remove                  remove the windows service for the node application
+    -x, --stop                    stop the service before uninstalling
+    -s, --silent                  supress any information in the console
+    -c, --confirmation            ask for confirmation before installing/uninstalling
+    -p, --path <ARG1>             path to the node application you want to install as a service (current path by default)
+    -n, --name <ARG1>             name for service (default: name from package.json)
+    -d, --description <ARG1>      service description (default: description from package.json)
+    --displayname <ARG1>          display name for service
+    --startcmd <ARG1>             use this command for start service (default: scripts.start from package.json)
+    --startuptype <ARG1>          set service startup type on boot (auto|manual|delayed|disabled) ("auto" by default)
+    --env <ARG1>                  propogate environment variable (multiple)
+    --startwithnpm                use "npm start" as a startcmd
+    --set <ARG1>                  call nssm "set" command with arguments (multiple)
 
 ## Method 1
 
