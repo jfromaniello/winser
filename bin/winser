@@ -125,14 +125,6 @@ async.series([
         next(error);
     },
     function(next){
-        if (options.noreatart){
-            if (!options.set)
-                options.set = ["AppExit Default Exit"];
-            options.set.push("AppExit Default Exit");
-        }
-        next();
-    },
-    function(next){
         var error = null;
         if (process.platform !== "win32"){
             error = 'Winser can only install services on windows.';
