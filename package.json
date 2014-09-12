@@ -1,6 +1,6 @@
 {
   "name": "winser",
-  "version": "0.4.0",
+  "version": "1.0.1",
   "description": "Run a node.js application as a window service using nssm.",
   "keywords": [
     "windows",

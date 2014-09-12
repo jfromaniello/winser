@@ -90,9 +90,9 @@ function getStartupType(){
     switch (options.startuptype){
         case "auto":
             return "SERVICE_AUTO_START";
-        case "manual":
-            return "SERVICE_DELAYED_START";
         case "delayed":
+            return "SERVICE_DELAYED_AUTO_START";
+        case "manual":
             return "SERVICE_DEMAND_START";
         case "disabled":
             return "SERVICE_DISABLED";
