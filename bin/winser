@@ -139,7 +139,7 @@ async.series([
                 next();
             }
         });
-    }, 
+    },
     function(next){
         var error = null;
         if (!(fs.existsSync||path.existsSync)(path.join(options.path, "package.json"))){
@@ -236,8 +236,8 @@ async.series([
                     }
                     next(error);
                 });
-        }else if(options.remove){ 
-            nssmExec('remove', ' confirm', 
+        }else if(options.remove){
+            nssmExec('remove', ' confirm',
                 function(error){
                     if(!error){
                         log('The service for "' + options.name + '" was removed.');
@@ -248,7 +248,7 @@ async.series([
         }
     },
     function(next){
-        nssmExec('set', 'AppDirectory "' + options.path + '"', 
+        nssmExec('set', 'AppDirectory "' + options.path + '"',
             function(error){
                 if (error)
                     next('Can\'t set startup folder (' + options.path + ') for service');
@@ -258,7 +258,7 @@ async.series([
     },
     function(next){
         if (options.description){
-            nssmExec('set', 'Description "' + options.description + '"', 
+            nssmExec('set', 'Description "' + options.description + '"',
                 function(error){
                     if (error)
                         next('Can\'t set description for service');
@@ -271,7 +271,7 @@ async.series([
     },
     function(next){
         if (options.displayname){
-            nssmExec('set', 'DisplayName "' + options.displayname + '"', 
+            nssmExec('set', 'DisplayName "' + options.displayname + '"',
                 function(error){
                     if (error)
                         next('Can\'t set display name for service');
@@ -293,7 +293,8 @@ async.series([
     },
     function(next){
         if (options.env && options.env.length > 0){
-            nssmExec('set', 'AppEnvironmentExtra "' + options.env.join(' ') + '"',
+            var envs = Array.isArray(options.env) ? options.env.join(' ') : options.env;
+            nssmExec('set', 'AppEnvironmentExtra ' + envs,
                 function(error){
                     if (error){
                         next('Can\'t set environment for service');
@@ -351,5 +352,3 @@ function(error){
         process.exit(1);
     }
 });
-
-    
