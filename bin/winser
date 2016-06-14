@@ -132,13 +132,19 @@ async.series([
         next(error);
     },
     function(next){
-        exec('NET SESSION', function(err, stdout, stderr){
-            if(err || stderr.length !== 0){
-                next("No rights to manage services.");
-            }else{
-                next();
-            }
-        });
+      exec('NET SESSION', function(err, stdout, stderr){
+          if(err || stderr.length !== 0){
+              exec('NET USER', function(err, stdout, stderr){
+                  if(err || stderr.length !== 0){
+                      next("No rights to manage services.");
+                  }else{
+                      next();
+                  }
+              });
+          }else{
+              next();
+          }
+      });
     },
     function(next){
         var error = null;
