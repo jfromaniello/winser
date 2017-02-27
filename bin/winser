@@ -9,7 +9,7 @@ var path = require('path');
 var options = stdio.getopt({
     'version': {
         key: 'v',
-        description: 'show vinser version and exit'
+        description: 'show winser version and exit'
     },
     'autostart': {
         key: 'a',
@@ -75,10 +75,10 @@ var options = stdio.getopt({
         multiple: true,
         description: 'call nssm "set" command with arguments'
     }
-}, 'vinser [OPTION1] [OPTION2] ...');
+}, 'winser [OPTION1] [OPTION2] ...');
 
 if (options.version){
-    console.log('vinser v' + require("../package.json").version);
+    console.log('winser v' + require("../package.json").version);
     process.exit(0);
 }
 
