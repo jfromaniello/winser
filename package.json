@@ -2,6 +2,7 @@
   "name": "winser",
   "version": "1.0.2",
   "description": "Run a node.js application as a window service using nssm.",
+  "main": "index.js",
   "keywords": [
     "windows",
     "services",
@@ -21,6 +22,7 @@
   "private": false,
   "dependencies": {
     "async": "0.9.0",
+    "object-assign": "4.1.1",
     "stdio": "0.2.2"
   },
   "bin": {
