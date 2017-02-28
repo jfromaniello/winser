@@ -311,7 +311,7 @@ Winser.prototype.setSilent = function setSilent(silent) {
 }
 
 function checkRequerimentsAndApplyDefaults(action, opts, cb) {
-    var options = opts = {};
+    var options = opts || {};
 
     async.series([
         function(next) {
@@ -373,7 +373,7 @@ function checkRequerimentsAndApplyDefaults(action, opts, cb) {
                     arch = stdout.match(/(32|64)/)[1];
                 }
 
-                options.nssmPath = '"' + path.join(__dirname, (arch === '64') ? 'nssm64.exe' : 'nssm.exe') + '"';
+                options.nssmPath = '"' + path.join(__dirname, './bin', (arch === '64') ? 'nssm64.exe' : 'nssm.exe') + '"';
                 next();
             });
         }
@@ -399,7 +399,7 @@ function getAppInfoFromPkgOrOptions(options, localOptions, cb) {
         appPath = options.path;
     }
 
-    startwithnpm = localOptions.startwithnpm || appInfo.startwithnpm || options.startwithnpm;
+    startwithnpm = (localOptions && localOptions.startwithnpm) || (appInfo && appInfo.startwithnpm) || (options.startwithnpm);
 
     if (startwithnpm) {
         startcmd = 'npm start';
