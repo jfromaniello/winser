@@ -171,11 +171,19 @@ Winser.prototype.install = function install(localOpts, cb) {
             }
         },
         function(next) {
+            var setOpts
+
             if (!localOpts || !localOpts.set || localOpts.set.length === 0) {
                 return next();
             }
 
-            async.each(localOpts.set, function(arg, callback) {
+            if (typeof localOpts.set === 'string') {
+                setOpts = [localOpts.set]
+            } else {
+                setOpts = localOpts.set
+            }
+
+            async.each(setOpts, function(arg, callback) {
                 nssmExec(options.nssmPath, 'set', appInfo.name, arg, options.silent, function(error) {
                   if (error) {
                       return callback(new Error('Set operation failed (' + arg + ')'));
