@@ -8,7 +8,7 @@
 
 ## Command line arguments
 
-    -v, --version                 show vinser version and exit
+    -v, --version                 show winser version and exit
     -a, --autostart               start the application immediately after installation
     -i, --install                 install the node application as a windows service
     -r, --remove                  remove the windows service for the node application
@@ -87,7 +87,7 @@ The name of the service will be the same from your package.json "name" setting.
 
 ## Credits
 
-This project is heavily inspired in 
+This project is heavily inspired in
 
  - [Node.js on windows by Tatham Oddie](http://blog.tatham.oddie.com.au/2011/03/16/node-js-on-windows/)
 
@@ -95,7 +95,7 @@ And it uses:
 
  - [nssm](http://nssm.cc)
 
-## License 
+## License
 
 (The MIT License)
 
