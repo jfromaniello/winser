@@ -133,8 +133,10 @@ async.series([
     },
     function(next){
         exec('NET SESSION', function(err, stdout, stderr){
-            if(err || stderr.length !== 0){
+            if(err){
                 next("No rights to manage services.");
+            }else if(stderr.length !== 0){
+                next(stderr);
             }else{
                 next();
             }
