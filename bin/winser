@@ -312,6 +312,9 @@ async.series([
         if (!options.set || options.set.length === 0){
             next();
         }else{
+            if (typeof(options.set) === 'string') {
+                options.set = [options.set];
+            }
             async.each(options.set,
                 function(arg, callback) {
                     nssmExec('set', arg,
